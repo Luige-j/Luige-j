@@ -1,0 +1,236 @@
+from tkinter import *
+from tkinter import PhotoImage
+import random
+
+word_hints = {
+    "python": "A popular programming language.",
+    "hangman": "A classic word-guessing game.",
+    "for": "entry controlled loops used to repeat a section of code known number of times.",
+    "while": "entry controlled loops used to repeat a specific block of code an unknown number of times, until a condition is met.",
+    "monitor": "An output device that displays information in pictorial or textual form. "
+}
+
+# Function to start the Hangman game
+def start_game(event = None):
+    global word, guessed_letters, attempts, word_completion, player_name, player_section
+
+    # Get player name and section
+    player_name = entry_name.get()
+    player_section = entry_section.get()
+    
+    if not player_name or not player_section:
+        lbl_message.config(text="Please enter your name and section.")
+        return
+
+    word_list = ["python", "hangman", "for", "while", "monitor"]
+    word = random.choice(word_list).lower()
+    hint = word_hints[word]
+    guessed_letters = []
+    attempts = 6
+    word_completion = "_ " * len(word)
+
+    lbl_word.config(text=word_completion)
+    lbl_hangman.config(text=display_hangman(attempts))
+    lbl_message.config(text = "Guess the correct letter to win!!")
+    lbl_hint.config(text=f"Hint: {hint}", fg = "red")
+    lbl2 = Label(window, text=f"Welcome, {player_name} from {player_section}!", font = ("bookman old style", 35), fg = "cyan")
+
+    # Hide the name and section entry
+    entry_name.place_forget()
+    lbl_name.place_forget()
+    entry_section.place_forget()
+    lbl_section.place_forget()
+    btn_start.place_forget()
+    lbl.place_forget()
+
+    btn_guess.place(relx=0.5, rely=0.75, anchor='center')
+    btn_reset.place(relx=0.5, rely=0.8, anchor='center')
+    entry_guess.place(relx=0.5, rely=0.65, anchor='center')
+    lbl2.place(relx=0.5, rely=0.05, anchor='center')
+    lbl_word.place(relx=0.5, rely=0.55, anchor='center')
+    lbl_hint.place(relx=0.5, rely=0.7, anchor='center')
+
+    entry_guess.bind("<Return>", guess_letter)
+
+
+
+
+
+# Function to handle letter guesses
+def guess_letter(event = None):
+    global attempts, word_completion
+    guess = entry_guess.get().lower()
+    entry_guess.delete(0, END)
+
+    if len(guess) != 1 or not guess.isalpha():
+        lbl_message.config(text="Please enter a single letter.")
+        return
+    if guess in guessed_letters:
+        lbl_message.config(text="You've already guessed that letter.")
+        return
+
+    guessed_letters.append(guess)
+
+    if guess in word:
+        lbl_message.config(text=f"Good guess: {guess}")
+        word_completion = "".join([letter if letter in guessed_letters else "_ " for letter in word])
+    else:
+        attempts -= 1
+        lbl_message.config(text=f"Wrong guess: {guess}. You have {attempts} attempts left.")
+
+    lbl_word.config(text=word_completion)
+    lbl_hangman.config(text=display_hangman(attempts))
+
+    if "_ " not in word_completion:
+        lbl_message.config(text="Congratulations! You've guessed the word: " + word)
+        reset_game()
+    elif attempts == 0:
+        lbl_message.config(text="Game over! The word was: " + word)
+        reset_game()
+
+    entry_guess.bind("<Return>", guess_letter)
+
+# Function to reset the game
+def reset_game():
+    entry_guess.pack_forget()
+    btn_guess.pack_forget()
+    btn_reset.place()
+    
+# Function to display the hangman stages
+def display_hangman(attempts):
+    stages = [
+        """
+           ------
+           |    |
+           |    O
+           |   /|\\
+           |   / \\
+           |
+        """,
+        """
+           ------
+           |    |
+           |    O
+           |   /|\\
+           |   /
+           |
+        """,
+        """
+           ------
+           |    |
+           |    O
+           |   /|
+           |   /
+           |
+        """,
+        """
+           ------
+           |    |
+           |    O
+           |   /|
+           |   
+           |
+        """,
+        """
+           ------
+           |    |
+           |    O
+           |    |
+           |   
+           |
+        """,
+        """
+           ------
+           |    |
+           |    O
+           |    
+           |   
+           |
+        """,
+        """
+           ------
+           |    |
+           |    
+           |    
+           |   
+           |
+        """,
+        """
+           ------
+           |    
+           |    
+           |    
+           |   
+           |
+        """,
+        """
+           
+           |    
+           |    
+           |    
+           |   
+           |
+        """,
+    ]
+    return stages[attempts]
+
+# Reset button action
+def reset():
+    lbl_message.config(text="")
+    start_game()
+
+# GUI setup
+window = Tk()
+window.title("Hangman")
+window.state('zoomed')
+
+logo = PhotoImage(file = "C:/Users/User/Downloads/logo.png")
+window.iconphoto(False, logo)
+
+lbl = Label(window, text="Welcome to Hangman", font=("Bookman Old Style", 40))
+lbl.place(relx=0.5, rely=0.25, anchor='center')
+
+# Input for name and section
+lbl_name = Label(window, text="Enter your name:", font=("Bookman Old Style", 20))
+lbl_name.place(relx=0.5, rely=0.35, anchor='center')
+entry_name = Entry(window, font=("Bookman Old Style", 20))
+entry_name.place(relx=0.5, rely=0.4, anchor='center')
+
+lbl_section = Label(window, text="Enter your section:", font=("Bookman Old Style", 20))
+lbl_section.place(relx=0.5, rely=0.45, anchor='center')
+entry_section = Entry(window, font=("Bookman Old Style", 20))
+entry_section.place(relx=0.5, rely=0.5, anchor='center')
+
+btn_start = Button(window, text="Start Game", bg="green", fg="white", command=start_game)
+btn_start.place(relx=0.5, rely=0.55, anchor='center')
+
+# Game display labels
+lbl_word = Label(window, text="", font=("Bookman Old Style", 30))
+lbl_word.place(relx=0.5, rely=0.5, anchor='center')
+lbl_word.place_forget()
+
+lbl_hangman = Label(window, text="", font=("Courier", 40), justify='left')
+lbl_hangman.place(relx=0.45, rely=0.3, anchor='center')
+
+lbl_message = Label(window, text="", font=("Bookman Old Style", 20))
+lbl_message.place(relx=0.5, rely=0.1, anchor='center')
+
+lbl_hint = Label(window, text="", font=("Bookman Old Style", 20))  # Hint label
+lbl_hint.place(relx=0.5, rely=0.6, anchor='center')
+lbl_hint.place_forget()
+
+entry_guess = Entry(window, font=("Bookman Old Style", 20), width=5)
+entry_guess.place(relx=0.5, rely=0.65, anchor='center')
+entry_guess.place_forget()
+
+btn_guess = Button(window, text="Guess Letter", bg="black", fg="white", command=guess_letter)
+btn_guess.place(relx=0.5, rely=0.75, anchor='center')
+btn_guess.place_forget()
+
+btn_reset = Button(window, text="Play Again", bg="blue", fg="white", command=reset)
+btn_reset.place(relx=0.5, rely=0.87, anchor='center')
+btn_reset.place_forget()  # Hide reset button initially
+
+
+
+window.mainloop()

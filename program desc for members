@@ -1,0 +1,297 @@
+from tkinter import * #imports the tkinter (window)
+from tkinter import PhotoImage #imports photo into the tkinter
+import random #imports random selection function
+
+is_dark_mode = False #sets the dark mode 
+lbl2 = None #makes the lbl2 variable recognizable
+
+def toggle_mode(): #sets a condition if the turn on/off button is clicked
+    global is_dark_mode
+    is_dark_mode = not is_dark_mode
+    if is_dark_mode:
+        set_dark_mode() #sets the screen in dark mode if the is_dark_mode variable is False
+    else:
+        set_light_mode() #sets the screen in light mode if the is_dark_mode variable is True
+    update_lbl2() #it updates the lbl2 screen to match is_dark_mode variable's value
+
+def set_dark_mode(): #this command changes the color of the background of the following to dark color whenever the turn on/off is clicked
+    window.config(bg="#2C2C2C")
+    lbl.config(bg="#2C2C2C", fg="white")
+    lbl_name.config(bg="#2C2C2C", fg="white")
+    lbl_section.config(bg="#2C2C2C", fg="white")
+    lbl_word.config(bg="#2C2C2C", fg="white")
+    lbl_hangman.config(bg="#2C2C2C", fg="red")
+    lbl_message.config(bg="#2C2C2C", fg="white")
+    lbl_hint.config(bg="#2C2C2C", fg="red")
+    btn_start.config(bg="green", fg="white")
+    btn_guess.config(bg="black", fg="white")
+    btn_reset.config(bg="blue", fg="white")
+    btn_mode_toggle.config(bg="white", fg="black")
+    entry_name.config(bg="black", fg="white")
+    entry_section.config(bg="black", fg="white")
+    entry_guess.config(bg="black", fg="white")
+
+    if lbl2:
+        lbl2.config(bg="#2C2C2C", fg="cyan")
+
+def set_light_mode(): #this command changes the color of the background of the following to light color whenever the turn on/off is clicked
+    window.config(bg="#F0F0F0")
+    lbl.config(bg="#F0F0F0", fg="black")
+    lbl_name.config(bg="#F0F0F0", fg="black")
+    lbl_section.config(bg="#F0F0F0", fg="black")
+    lbl_word.config(bg="#F0F0F0", fg="black")
+    lbl_hangman.config(bg="#F0F0F0", fg="red")
+    lbl_message.config(bg="#F0F0F0", fg="black")
+    lbl_hint.config(bg="#F0F0F0", fg="red")
+    btn_start.config(bg="green", fg="white")
+    btn_guess.config(bg="black", fg="white")
+    btn_reset.config(bg="blue", fg="white")
+    btn_mode_toggle.config(bg="black", fg="white")
+    entry_name.config(bg="white", fg="black")
+    entry_section.config(bg="white", fg="black")
+    entry_guess.config(bg="white", fg="black")
+
+    if lbl2:
+        lbl2.config(bg="#F0F0F0", fg="red")
+
+word_hints = {
+    "python": "A popular programming language.",
+    "hangman": "A classic word-guessing game.",
+    "for": "entry controlled loops used to repeat a section of code known number of times.",
+    "while": "entry controlled loops used to repeat a specific block until a condition is met.",
+    "monitor": "An output device that displays information in pictorial or textual form. "
+}   #this variable give hints to the random word selected
+
+def start_game(event=None): #this sets a condition if the start button is clicked (event = None is to enable using enter button function)
+    global word, guessed_letters, attempts, word_completion, player_name, player_section, lbl2
+    update_lbl2()
+    
+
+    player_name = entry_name.get()  #this variable sets the player name into whatever you input
+    player_section = entry_section.get()    #this variable sets the player section into whatever you input
+    
+    if not player_name or not player_section: #this displays a message to enter your name and section when there is no input
+        lbl_message.config(text="Please enter your name and section.")
+        return
+
+    word_list = ["python", "hangman", "for", "while", "monitor"]    #this variable shows the list of word that the program will randomly get
+    word = random.choice(word_list).lower() #this sets the word_list as the source of word that the program can get from
+    hint = word_hints[word] #this variable sets the hint according to the random word is selected
+    guessed_letters = [] #this variable set as empty and can store elements
+    attempts = 6    #this variable sets the amount of times you can guess
+    word_completion = "_ " * len(word) #this variable sets the amount of dash(_) the program will show according to the amount of words the randomly selected word will have
+
+    lbl_word.config(text=word_completion) #this displays the word_completion variable
+    lbl_hangman.config(text=display_hangman(attempts))  #this displays and updates the hangman drawing whenever you guessed wrong
+    lbl_message.config(text="Guess the correct letter to win!!")    #this displays a text that tells you what to do
+    lbl_hint.config(text=f"Hint: {hint}", fg="red") #this command sets a color of the foreground of the hint
+    
+    lbl2 = Label(window, text=f"Welcome, {player_name} from {player_section}!", font=("bookman old style", 35), fg="red")   #this variable sets a message's font, foreground color, and font size
+    lbl2.place(relx=0.5, rely=0.05, anchor='center')    #this command sets the place of lbl2 variable
+
+    #this command erases the location of the following after clicking the start button
+    entry_name.place_forget()
+    lbl_name.place_forget()
+    entry_section.place_forget()
+    lbl_section.place_forget()
+    btn_start.place_forget()
+    lbl.place_forget()
+
+    #this command sets the location of the following after clicking the start button
+    btn_guess.place(relx=0.5, rely=0.8, anchor='center')
+    btn_reset.place(relx=0.5, rely=0.85, anchor='center')
+    entry_guess.place(relx=0.5, rely=0.7, anchor='center')
+    lbl_word.place(relx=0.5, rely=0.63, anchor='center')
+    lbl_hint.place(relx=0.5, rely=0.75, anchor='center')
+    lbl_hangman.place(relx=0.25, rely=0.1)
+
+    entry_guess.bind("<Return>", guess_letter)  #this command processes the guessed letter
+
+def validate_guess_input(char):     #this command sets the amount of letters you can input int the entry widget
+    return len(char) == 0 or (len(char) == 1 and char.isalpha())   
+
+def guess_letter(event=None):   #this command sets an entry widget to input your guess
+    global attempts, word_completion
+    guess = entry_guess.get().lower()
+    entry_guess.delete(0, END)
+
+    if guess in guessed_letters:    #this command displays a message if you already guessed the letter
+        lbl_message.config(text="You've already guessed that letter.")
+        return
+
+    guessed_letters.append(guess)   #this command keeps track of the letter you already input and displays the letter if your guess is correct
+
+    if guess in word:   #this command displays a message if you guessed wrong or right
+        lbl_message.config(text=f"Good guess: {guess}")
+        word_completion = "".join([letter if letter in guessed_letters else "_ " for letter in word])
+    else:
+        attempts -= 1
+        lbl_message.config(text=f"Wrong guess: {guess}. You have {attempts} attempts left.")
+
+    lbl_word.config(text=word_completion)   #this updates the amount of dash(_) that is displayed according to the amount of letter you guessed
+    lbl_hangman.config(text=display_hangman(attempts))  #this updates the attempts you have left
+
+    if "_ " not in word_completion: #this command displays a message if the dash(_) is gone
+        lbl_message.config(text="Congratulations! You've guessed the word: " + word)
+        reset_game()
+    elif attempts == 0: #this displays a message if your attempts is at 0
+        lbl_message.config(text="Game over! The word was: " + word)
+        reset_game()
+
+    entry_guess.bind("<Return>", guess_letter)
+
+def reset_game():   
+    entry_guess.pack_forget()   #this hides the guess entry widget, removing it from the window
+    btn_guess.pack_forget()     #this hides the guess button, removing it from the window
+    btn_reset.place()   #The reset button (btn_reset) is made visible using .place(), allowing the user to start a new game or reset the current one.
+    update_lbl2()
+
+def update_lbl2():  #this updates the color of the lbl2 variable background according to the is_dark_mode variable's value
+    if lbl2:
+        if is_dark_mode:
+            lbl2.config(bg="#2C2C2C", fg="cyan")
+        else:
+            lbl2.config(fg="red")
+
+def display_hangman(attempts):  #this displays the drawing and draws the hangman one by one if your guess is wrong
+    stages = [
+        """
+           ------
+           |    |
+           |    O
+           |   /|\\
+           |   / \\
+           |
+        """,
+        """
+           ------
+           |    |
+           |    O
+           |   /|\\
+           |   /
+           |
+        """,
+        """
+           ------
+           |    |
+           |    O
+           |   /|
+           |   /
+           |
+        """,
+        """
+           ------
+           |    |
+           |    O
+           |   /|
+           |   
+           |
+        """,
+        """
+           ------
+           |    |
+           |    O
+           |    |
+           |   
+           |
+        """,
+        """
+           ------
+           |    |
+           |    O
+           |    
+           |   
+           |
+        """,
+        """
+           ------
+           |    |
+           |    
+           |    
+           |   
+           |
+        """,
+        """
+           ------
+           |    
+           |    
+           |    
+           |   
+           |
+        """,
+        """
+           
+           |    
+           |    
+           |    
+           |   
+           |
+        """,
+    ]
+    return stages[attempts]
+
+def reset():
+    lbl_message.config(text="")
+    start_game()
+    update_lbl2()
+
+window = Tk()
+window.title("Hangman")
+window.state('zoomed')
+
+#logo = PhotoImage(file="")
+#window.iconphoto(False, logo)
+
+lbl = Label(window, text="Welcome to Hangman", font=("Bookman Old Style", 40))  #this sets a message welcoming player to hangman if the window is displayed
+lbl.place(relx=0.5, rely=0.25, anchor='center') #this sets the location of the message
+
+lbl_name = Label(window, text="Enter your name:", font=("Bookman Old Style", 20))   #this displays a message to enter your name
+lbl_name.place(relx=0.5, rely=0.35, anchor='center')    #this sets the location of the message
+entry_name = Entry(window, font=("Bookman Old Style", 20), bg="white", fg="black")  #this displays an entry widget where you can enter your name
+entry_name.place(relx=0.5, rely=0.4, anchor='center')   #this sete the location of the entry widget
+
+lbl_section = Label(window, text="Enter your section:", font=("Bookman Old Style", 20)) #this displays a message to enter your section
+lbl_section.place(relx=0.5, rely=0.46, anchor='center') #this sets the location of the message
+entry_section = Entry(window, font=("Bookman Old Style", 20), bg="white", fg="black")   #this displays an entry widget where you can enter your section
+entry_section.place(relx=0.5, rely=0.51, anchor='center')   #this sets the location of the entry widget
+
+btn_start = Button(window, text="Start Game", bg="green", fg="white", command=start_game)   #this displays a button with a command to start a game
+btn_start.place(relx=0.5, rely=0.56, anchor='center')   #this sets the location of the button
+
+btn_mode_toggle = Button(window, text="Turn on/off", bg="black", fg="white", command=toggle_mode)   #this displays a button with a command to turn on/off dark mode
+btn_mode_toggle.place(relx=0.1, rely=0.2)   #this sets the location of the button
+
+lbl_word = Label(window, text="", font=("Bookman Old Style", 30))   #this 
+lbl_word.place(relx=0.5, rely=0.5, anchor='center')
+lbl_word.place_forget()
+
+lbl_hangman = Label(window, text="", font=("Courier", 30), justify='left', fg="red")    #this displays the drawing of hangman
+lbl_hangman.place(relx=0.45, rely=0.35) #this sets the location of the drawing
+lbl_hangman.place_forget()  #this erases the drawing while the start button is not clicked
+
+lbl_message = Label(window, text="", font=("Bookman Old Style", 20))    #this displays a message whether your guess is correct of wrong
+lbl_message.place(relx=0.5, rely=0.12, anchor='center') #this sets the location of the message
+
+lbl_hint = Label(window, text="", font=("Bookman Old Style", 20))  # Hint label
+lbl_hint.place(relx=0.5, rely=0.6, anchor='center') #this sets the location of the hint message
+lbl_hint.place_forget() #this erases the hint message while the start button is not clicked
+
+entry_guess = Entry(window, font=("Bookman Old Style", 20), width=5)   #this displays an entry widget where you can input your guessed letter
+entry_guess.place(relx=0.5, rely=0.65, anchor='center') #this sets the location of the entry widget
+entry_guess.place_forget()  #this erases the entry widget while the start button is not clicked
+
+btn_guess = Button(window, text="Guess Letter", bg="black", fg="white", command=guess_letter)   #this displays a button with a command to register your guess
+btn_guess.place(relx=0.5, rely=0.75, anchor='center')   #this sets the location of the button
+btn_guess.place_forget()    #this erases the button while the start button is not clicked
+
+btn_reset = Button(window, text="Play Again", bg="blue", fg="white", command=reset) #this displays a button with a command to reset the game
+btn_reset.place(relx=0.5, rely=0.87, anchor='center')   #this sets the location of the button
+btn_reset.place_forget()    #this erases the button while the start button is not clicked
+
+entry_limit = (window.register(validate_guess_input), '%P')  #this sets the limit of the number of letters you can enter - '%P' passes the current value of the widget
+
+entry_guess = Entry(window, font=("Bookman Old Style", 20), width=5, validate='key', validatecommand=entry_limit)   #this displays an entry widget where you can input your guessed letter
+entry_guess.place(relx=0.5, rely=0.65, anchor='center') #this sets the location of the entry widget
+entry_guess.place_forget()  #this erases the entry widget while the start button is not clicked
+
+window.mainloop()   #this lets the pop up window stay in display while not clicking the X button

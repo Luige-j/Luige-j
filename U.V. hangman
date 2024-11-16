@@ -4,8 +4,9 @@ import random #imports random selection function
 
 
 window = Tk()
-window.title("Hangman")
+window.title("Hangman")  
 window.state('zoomed')
+window.minsize(1200, 900)
 
 is_dark_mode = False #sets the dark mode 
 lbl2 = None #makes the lbl2 variable recognizable
@@ -96,7 +97,6 @@ def start_game(event=None): #this sets a condition if the start button is clicke
     global word, guessed_letters, attempts, word_completion, player_name, player_section, lbl2, rep
     update_lbl2()
 
-
     player_name = entry_name.get()  #this variable sets the player name into whatever you input
     player_section = entry_section.get()    #this variable sets the player section into whatever you input
     
@@ -112,13 +112,13 @@ def start_game(event=None): #this sets a condition if the start button is clicke
 
     lbl_word.config(text=word_completion) #this displays the word_completion variable
     lbl_hangman.config(text=display_hangman1(attempts))  #this displays and updates the hangman drawing whenever you guessed wrong
-    lbl_message.config(text ="Guess the correct letter to win!!")    #this displays a text that tells you what to do
+    lbl_message.config(text ="Stage 1: Guess the correct letter to win!!")    #this displays a text that tells you what to do
     lbl_message1.config(text = "")
     lbl_message2.config(text = "")
     lbl_message3.config(text = "")
     lbl_hint.config(text=f"Hint: {hint}", fg="red") #this command sets a color of the foreground of the hint
     
-    lbl2.config(text=f"Welcome, {player_name} from {player_section}!")
+    lbl2.config(text=f"Welcome, {player_name} from BSIT-{player_section}!")
     lbl2.place(relx=0.5, rely=0.05, anchor='center')    #this command sets the place of lbl2 variable
 
     #this command erases the location of the following after clicking the start button
@@ -140,6 +140,7 @@ def start_game(event=None): #this sets a condition if the start button is clicke
     lbl_hint.place(relx=0.5, rely=0.75, anchor='center')
     lbl_hangman.place(relx=0.3, rely=0.1)
     btn_skip.place(relx = 0.2, rely = 0.8)
+    lbl_message.place(relx=0.5, rely=0.12, anchor='center')
 
     entry_guess.bind("<Return>", guess_letter)  #this command processes the guessed letter
 
@@ -185,7 +186,6 @@ def guess_letter(event=None):   #this command sets an entry widget to input your
         lbl_message3.place(relx = 0.5, rely = 0.6, anchor = 'center')
         btn_guess.place_forget()
         game_over()
-        disable_enter()
 
     if rep == 0:
         attempts = 6    #this variable sets the amount of times you can guess
@@ -194,21 +194,20 @@ def guess_letter(event=None):   #this command sets an entry widget to input your
 
     entry_guess.bind("<Return>", guess_letter)
 
+
 def game_over():
 
     btn_skip.place_forget()
     btn_guess.place_forget()
-    btn_reset.place_forget()
+    lbl_message.place_forget()
     entry_guess.place_forget()
     lbl_word.place_forget()
     lbl_hint.place_forget()
     lbl_hangman.place_forget()
     lbl2.place_forget()
-    disable_enter()
-    btn_reset()
-
+    btn_reset.place(relx=0.5, rely=0.85, anchor='center')
+    
 def advance():
-    global lbl2
 
     lbl_message1.config(text = f"Congratulations {player_name}!", font = ("Bookman Old Style", 50))
     lbl_message1.place(relx = 0.5, rely = 0.45, anchor = 'center')
@@ -217,9 +216,9 @@ def advance():
     lbl_message3.config(text = "Would you like to play again? or Go to the next level?")
     lbl_message3.place(relx = 0.5, rely = 0.6, anchor = 'center')
     btn_next.place(relx = 0.8, rely = 0.85)
+    btn_reset.place(relx=0.5, rely=0.85, anchor='center')
 
     btn_guess.place_forget()
-    btn_reset.place_forget()
     btn_skip.place_forget()
     entry_guess.place_forget()
     lbl_word.place_forget()
@@ -228,18 +227,9 @@ def advance():
     lbl2.place_forget()
     lbl_message.place_forget()
     lbl.place_forget()
-    disable_enter()
-    btn_reset()
-    btn_next()
-
-def disable_enter():
-    entry_guess.config(state="disabled")
-    btn_guess.config(state="disabled")
-    btn_reset.place(relx=0.5, rely=0.85, anchor='center')
-    entry_guess.unbind("<Return>")
 
 def reset_game():   
-    global attempts, rep
+    global attempts, rep, attempts2, rep2, correct_ans, total
     entry_guess.pack_forget()   #this hides the guess entry widget, removing it from the window
     btn_guess.pack_forget()     #this hides the guess button, removing it from the window
     btn_reset.place()   #The reset button (btn_reset) is made visible using .place(), allowing the user to start a new game or reset the current one.
@@ -249,11 +239,17 @@ def reset_game():
     entry_guess.bind("<Return>", guess_letter)
     attempts = 6    #this variable sets the amount of times you can guess
     rep = 5
+    attempts2 = 6
+    rep2 = 10
+    correct_ans = 0
+    total = 10
+
     lbl_message1.place_forget()
     lbl_message2.place_forget()
     lbl_message3.place_forget()
-    btn_restart_lvl.place_forget()
     lbl_result.place_forget()
+    btn_restart_lvl.place_forget()
+    btn_next.place_forget()
     start_game()
     update_lbl2()
 
@@ -364,10 +360,16 @@ sentence_list = [
     {"sentence": "A monitor is an output device that displays {word}.", "word": "data", "word2": "shirt", "word3": "person", "word4": "feet"},
     {"sentence": "A loop is used to repeat a block of {word}.", "word": "code", "word2": "actions", "word3": "letters", "word4": "lol"},
     {"sentence": "A compiler translates code from high-level language to {word} language.", "word": "machine", "word2": "complicated", "word3": "sign", "word4": "alien"},
-    {"sentence": "In a game of Hangman, players guess {word} to win.", "word": "letters", "word2": "numbers", "word3": "word", "word4": "pass"},
-    {"sentence": "Name of our ITE 366 teacher: {word}", "word": "Rica", "word2": "Martin", "word3": "Alice Go", "word4": "Junel"},
-    {"sentence": "Name of our leader: {word}", "word": "Nic", "word2": "Elmer", "word3": "Karl", "word4": "Mark"},
-    {"sentence": "Known as the brain of a computer", "word": "CPU", "word2": "ILY", "word3": "IDGF", "word4": "UFO"}
+    {"sentence": "{word} is another free spreadsheet web application that has an abundance of features.", "word": "Zoho Sheet", "word2": "Airtable", "word3": "Apache Office", "word4": "Sheetgo"},
+    {"sentence": "Name of our ITE 366 teacher: {word}", "word": "Ma Rica Espinosa", "word2": "Martin Shimeya", "word3": "Alice Go", "word4": "Junel Hawktwa"},
+    {"sentence": "In Python, a {word} is defined as a contiguous group of characters denoted by quote marks.", "word": "string", "word2": "list", "word3": "tuples", "word4": "dictionary"},
+    {"sentence": "{word} is known as the brain of a computer", "word": "CPU", "word2": "ILY", "word3": "IDGF", "word4": "UFO"},
+    {"sentence": "{word} is a free, web-based word processor offered by Google.", "word": "Google Docs", "word2": "Google Sheets", "word3": "Microsoft Word", "word4": "Google Drive"},
+    {"sentence": "{word} is used to store, organize and analyze data.", "word": "Spreadsheet", "word2": "Google Docs", "word3": "Microsoft Excel", "word4": "Google Slides"},
+    {"sentence": "A {word} is a form of sequence data that is comparable to a list.", "word": "tuples", "word2": "string", "word3": "dictionary", "word4": "list"},
+    {"sentence": "{word} is a type of logical operator where the output is True if both statement is True", "word": "AND", "word2": "OR", "word3": "NOT", "word4": "WHY"},
+    {"sentence": "{word} is a type of logical operator where the output is True if atleast one statement is True", "word": "OR", "word2": "NOT", "word3": "NOT", "WHO": "AND"},
+    {"sentence": "{word} is a type of logical operator where the output is True if statement is False and False if it is True", "word": "NOT", "word2": "WHEN", "word3": "OR", "word4": "AND"}
 ]
 
 attempts2 = 6
@@ -386,7 +388,8 @@ def next_lvl():
     # Display the sentence label and choice buttons
     
     lbl_hangman2.config(text=display_hangman2(attempts2))  #this displays and updates the hangman drawing whenever you guessed wrong
-    lbl3.config(text="Guess the correct answer to win!!")
+    lbl3.config(text=f"Welcome, {player_name} from BSIT-{player_section}", fg="red")
+    lbl_message.config(text="Stage 2: Guess the correct word to win!!")
     
     lbl_sentence.place(relx=0.5, rely=0.65, anchor='center')
     lbl_hangman2.place(relx = 0.3, rely = 0.1)
@@ -394,8 +397,8 @@ def next_lvl():
     btn_choice2.place(relx=0.3, rely=0.75, anchor='center')
     btn_choice3.place(relx=0.7, rely=0.7, anchor='center')
     btn_choice4.place(relx=0.7, rely=0.75, anchor='center')
-    lbl_result.place(relx=0.5, rely=0.7, anchor='center')
     lbl3.place(relx=0.5, rely=0.05, anchor='center')
+    lbl_message.place(relx=0.5, rely=0.12, anchor='center')
 
     sentence_data = random.choice(sentence_list)  # Randomly select a sentence
     sentence = sentence_data["sentence"]
@@ -427,13 +430,11 @@ def check_answer(selected_word):
     if selected_word == correct_word:
         correct_ans += 1
         rep2 -= 1
-        lbl_result.config(text="Correct!", fg="green")
         next_lvl()
     else:
         attempts2 -= 1
         rep2 -= 1
         lbl_hangman2.config(text=display_hangman2(attempts2))
-        lbl_result.config(text=f"Wrong! The correct word was: {correct_word}", fg="red")
         next_lvl()
 
     if attempts2 == 0:  # Check if attempts have reached zero
@@ -450,8 +451,8 @@ def congrats():
     btn_choice2.place_forget()
     btn_choice3.place_forget()
     btn_choice4.place_forget()
-    lbl_result.place_forget()
     lbl3.place_forget()
+    lbl_message.place_forget()
 
     lbl_message1.config(text = f"Congratulations!! {player_name}", font=("Bookman Old Style", 80), fg = "red")
     lbl_message1.place(relx = 0.5, rely = 0.45, anchor = 'center')
@@ -472,6 +473,7 @@ def game_over2():
     btn_choice3.place_forget()
     btn_choice4.place_forget()
     lbl3.place_forget()
+    lbl_message.place_forget()
 
     lbl_message1.config(text = "Game Over!!", font=("Bookman Old Style", 80), fg = "red")
     lbl_message1.place(relx = 0.5, rely = 0.45, anchor = 'center')
@@ -588,7 +590,7 @@ lbl_name.place(relx=0.5, rely=0.35, anchor='center')    #this sets the location 
 entry_name = Entry(window, font=("Bookman Old Style", 20), bg="white", fg="black")  #this displays an entry widget where you can enter your name
 entry_name.place(relx=0.5, rely=0.4, anchor='center')   #this sete the location of the entry widget
 
-lbl_section = Label(window, text="Enter your section:", font=("Bookman Old Style", 20)) #this displays a message to enter your section
+lbl_section = Label(window, text="Enter your block:", font=("Bookman Old Style", 20)) #this displays a message to enter your section
 lbl_section.place(relx=0.5, rely=0.46, anchor='center') #this sets the location of the message
 entry_section = Entry(window, font=("Bookman Old Style", 20), bg="white", fg="black")   #this displays an entry widget where you can enter your section
 entry_section.place(relx=0.5, rely=0.51, anchor='center')   #this sets the location of the entry widget
@@ -668,7 +670,7 @@ entry_guess = Entry(window, font=("Bookman Old Style", 20), width=5, validate='k
 entry_guess.place(relx=0.5, rely=0.65, anchor='center') #this sets the location of the entry widget
 entry_guess.place_forget()  #this erases the entry widget while the start button is not clicked
 
-lbl_sentence = Label(window, text="", font=("Arial", 18))
+lbl_sentence = Label(window, text="", font=("Arial", 18), fg="red")
 lbl_sentence.place(relx=0.5, rely=0.4, anchor='center')  # Change to place() method
 lbl_sentence.place_forget()  # Hide initially
 

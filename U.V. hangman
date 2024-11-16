@@ -477,6 +477,8 @@ def game_over2():
 
     lbl_message1.config(text = "Game Over!!", font=("Bookman Old Style", 80), fg = "red")
     lbl_message1.place(relx = 0.5, rely = 0.45, anchor = 'center')
+    lbl_message2.config(text = f"You only guessed {correct_ans} correct answers out of {total} questions", font=("Bookman Old Style", 35))
+    lbl_message2.place(relx = 0.5, rely = 0.55, anchor = 'center')
     lbl_message3.config(text = "Would you like to play again?", font=("Bookman Old Style", 20))
     lbl_message3.place(relx = 0.5, rely = 0.6, anchor = 'center')
 
